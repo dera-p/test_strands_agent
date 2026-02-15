@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "playwright": "1.38.0",
+    "pptxgenjs": "^3.12.0",
+    "react-icons": "^5.5.0",
+    "sharp": "^0.34.5"
+  }
+}

@@ -1,0 +1,102 @@
+FROM public.ecr.aws/lambda/python:3.11-arm64
+
+# 1. Update & Install Basic Tools
+RUN yum update -y && \
+    yum install -y \
+    gzip \
+    tar \
+    xz \
+    wget \
+    unzip \
+    yum-utils \
+    shadow-utils \
+    && yum clean all
+
+# 2. Install Node.js 16 (ARM64 Binary)
+RUN cd /tmp && \
+    wget https://nodejs.org/dist/v16.20.2/node-v16.20.2-linux-arm64.tar.xz && \
+    tar -xJvf node-v16.20.2-linux-arm64.tar.xz && \
+    cp -r node-v16.20.2-linux-arm64/* /usr/ && \
+    rm -rf /tmp/node-v*
+
+# 3. Install Dependencies for Playwright & LibreOffice
+RUN yum install -y \
+    java-17-amazon-corretto-headless \
+    alsa-lib \
+    at-spi2-atk \
+    at-spi2-core \
+    atk \
+    cups-libs \
+    dbus-libs \
+    dbus-glib \
+    expat \
+    libX11 \
+    libXcomposite \
+    libXdamage \
+    libXext \
+    libXfixes \
+    libXrandr \
+    libgbm \
+    libdrm \
+    libxkbcommon \
+    mesa-libgbm \
+    nss \
+    pango \
+    cairo \
+    gtk3 \
+    libGL \
+    libXinerama \
+    && yum clean all
+
+# 4. Install LibreOffice
+RUN cd /tmp && \
+    wget https://download.documentfoundation.org/libreoffice/stable/25.2.7/rpm/x86_64/LibreOffice_25.2.7_Linux_x86-64_rpm.tar.gz && \
+    tar -xvf LibreOffice_25.2.7_Linux_x86-64_rpm.tar.gz && \
+    cd LibreOffice*_rpm/RPMS && \
+    yum localinstall -y --nogpgcheck *.rpm && \
+    rm -rf /tmp/LibreOffice*
+
+# 5. Set Environment Variables
+ENV PYTHONUTF8=1
+ENV HOME=/tmp
+ENV PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-browsers
+ENV PATH="$PATH:/opt/libreoffice7.6/program"
+
+# 6. Set working directory
+WORKDIR /app
+
+# 7. Copy Project Files
+COPY agentskills/ /app/agentskills/
+COPY skills/ /app/skills/
+COPY utils/ /app/utils/
+COPY my_tools.py /app/
+COPY agentcore_entrypoint.py /app/
+COPY agent/ /app/agent/
+COPY setup.py /app/
+
+# 8. Install Python Dependencies
+COPY requirements-agentcore.txt /app/
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements-agentcore.txt && \
+    pip install --no-cache-dir .
+
+# 9. Install Node.js Dependencies
+COPY package.json /app/
+RUN npm init -y && \
+    npm install pptxgenjs playwright@1.38.0 react-icons sharp
+
+# 10. Install Playwright Browsers (Chromium)
+RUN npx playwright install chromium
+
+# 11. Environment variables for AgentCore
+ENV AWS_REGION=ap-northeast-1
+ENV AWS_DEFAULT_REGION=ap-northeast-1
+ENV DOCKER_CONTAINER=1
+
+# 12. Expose ports for AgentCore (HTTP invocations)
+EXPOSE 8080
+EXPOSE 8000
+
+# 13. Override Lambda entrypoint and run as module
+ENTRYPOINT []
+CMD ["python", "-m", "agent"]
