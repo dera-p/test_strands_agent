@@ -92,6 +92,7 @@ RUN npx playwright install chromium
 ENV AWS_REGION=ap-northeast-1
 ENV AWS_DEFAULT_REGION=ap-northeast-1
 ENV DOCKER_CONTAINER=1
+ENV S3_BUCKET_NAME=strands-pptx-output-ACCOUNT_ID
 
 # 12. Expose ports for AgentCore (HTTP invocations)
 EXPOSE 8080

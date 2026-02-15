@@ -11,7 +11,7 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from my_tools import execute_shell_command, search_web, upload_to_s3
+from my_tools import execute_shell_command, search_web, upload_to_s3, upload_to_s3
 
 # Initialize the AgentCore app
 app = BedrockAgentCoreApp()

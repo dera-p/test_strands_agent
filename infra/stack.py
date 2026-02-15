@@ -2,6 +2,8 @@ from aws_cdk import (
     Stack,
     CfnOutput,
     aws_iam as iam,
+    aws_s3 as s3,
+    RemovalPolicy,
 )
 from aws_cdk import aws_bedrockagentcore as agentcore
 from constructs import Construct
@@ -15,6 +17,15 @@ class StrandsAgentStack(Stack):
         # Get account and region for IAM policies
         region = Stack.of(self).region
         account_id = Stack.of(self).account
+
+        # 0. Create S3 Bucket for PPTX output
+        output_bucket = s3.Bucket(
+            self, "PPTXOutputBucket",
+            bucket_name=f"strands-pptx-output-{account_id}",
+            versioned=False,
+            removal_policy=RemovalPolicy.DESTROY,  # For development
+            auto_delete_objects=True,  # For development
+        )
 
         # 1. Create IAM Role for AgentCore Runtime
         runtime_role = iam.Role(
@@ -90,8 +101,8 @@ class StrandsAgentStack(Stack):
                     "s3:ListBucket"
                 ],
                 resources=[
-                    "arn:aws:s3:::strands-pptx-output",
-                    "arn:aws:s3:::strands-pptx-output/*"
+                    output_bucket.bucket_arn,
+                    output_bucket.arn_for_objects("*")
                 ],
             )
         )
@@ -177,7 +188,9 @@ class StrandsAgentStack(Stack):
         )
 
         cfn_runtime.node.add_dependency(runtime_role)
+        cfn_runtime.node.add_dependency(output_bucket)
 
         # 5. Output the Runtime ARN
         CfnOutput(self, "RuntimeArn", value=cfn_runtime.attr_agent_runtime_arn)
         CfnOutput(self, "RuntimeName", value="StrandsPPTXAgent")
+        CfnOutput(self, "OutputBucketName", value=output_bucket.bucket_name)
