@@ -78,6 +78,24 @@ class StrandsAgentStack(Stack):
             )
         )
 
+        # S3 Access for file uploads
+        runtime_role.add_to_policy(
+            iam.PolicyStatement(
+                sid="S3FileUpload",
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "s3:PutObject",
+                    "s3:PutObjectAcl",
+                    "s3:GetObject",
+                    "s3:ListBucket"
+                ],
+                resources=[
+                    "arn:aws:s3:::strands-pptx-output",
+                    "arn:aws:s3:::strands-pptx-output/*"
+                ],
+            )
+        )
+
         # CloudWatch Metrics
         runtime_role.add_to_policy(
             iam.PolicyStatement(

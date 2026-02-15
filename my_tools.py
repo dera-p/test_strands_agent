@@ -1,6 +1,9 @@
 from strands import tool
 import subprocess
 import json
+import boto3
+import os
+from datetime import datetime
 try:
     from ddgs import DDGS
 except ImportError:
@@ -62,3 +65,44 @@ def execute_shell_command(command: str) -> str:
         
     except Exception as e:
         return f"Execution Error: {e}"
+
+
+@tool
+def upload_to_s3(file_path: str, bucket_name: str = None, s3_key: str = None) -> str:
+    """Upload a file to S3 bucket.
+    
+    Args:
+        file_path: Path to the file to upload
+        bucket_name: S3 bucket name (optional, uses default if not specified)
+        s3_key: S3 object key (optional, auto-generated if not specified)
+        
+    Returns:
+        S3 URL or error message
+    """
+    try:
+        # Use default bucket if not specified
+        if bucket_name is None:
+            bucket_name = os.environ.get('S3_BUCKET_NAME', 'strands-pptx-output')
+        
+        # Auto-generate S3 key if not specified
+        if s3_key is None:
+            timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+            filename = os.path.basename(file_path)
+            s3_key = f"presentations/{timestamp}-{filename}"
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            return f"Error: File not found: {file_path}"
+        
+        # Upload to S3
+        s3_client = boto3.client('s3')
+        s3_client.upload_file(file_path, bucket_name, s3_key)
+        
+        # Generate URL
+        region = os.environ.get('AWS_REGION', 'ap-northeast-1')
+        s3_url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{s3_key}"
+        
+        return f"Successfully uploaded to S3:\nBucket: {bucket_name}\nKey: {s3_key}\nURL: {s3_url}"
+        
+    except Exception as e:
+        return f"S3 Upload Error: {e}"

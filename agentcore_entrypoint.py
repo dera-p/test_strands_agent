@@ -5,7 +5,7 @@ Uses BedrockAgentCoreApp for simplified deployment
 from strands import Agent
 from strands.models import BedrockModel
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
-from my_tools import execute_shell_command, search_web
+from my_tools import execute_shell_command, search_web, upload_to_s3
 import asyncio
 
 # Initialize the AgentCore app
@@ -42,24 +42,32 @@ async def entrypoint(payload):
 1. プレゼンテーションの構成を考案
 2. 必要な情報を収集（Web検索を活用）
 3. PowerPointファイルを生成（シェルコマンド実行）
-4. 結果をユーザーに報告
+4. 生成したファイルをS3にアップロード
+5. 結果をユーザーに報告
 
 ## 利用可能なツール:
 - `search_web`: Web検索で最新情報を取得
 - `execute_shell_command`: Node.jsスクリプトでPowerPoint生成
+- `upload_to_s3`: 生成したファイルをS3にアップロード
+
+## PowerPoint生成スクリプト:
+- スクリプトパス: `node /app/skills/pptx/scripts/create_ppt.js`
+- 使用方法: `node /app/skills/pptx/scripts/create_ppt.js "タイトル" "スライド1の内容" "スライド2の内容" ...`
+- 出力: カレントディレクトリ(/app)に`presentation.pptx`が生成される
 
 ## 作業フロー:
 1. ユーザーの要求を分析
 2. 必要に応じてWeb検索で情報収集
-3. PowerPoint生成スクリプトを実行
-4. 結果を報告
+3. PowerPoint生成スクリプトを正しいパスで実行
+4. 生成成功後、`upload_to_s3`ツールでファイルをアップロード
+5. S3のURLをユーザーに報告
 
 常に日本語で丁寧に応答してください。"""
     
     # Create agent with tools
     agent = Agent(
         model=model,
-        tools=[search_web, execute_shell_command],
+        tools=[search_web, execute_shell_command, upload_to_s3],
         system_prompt=system_prompt
     )
     
