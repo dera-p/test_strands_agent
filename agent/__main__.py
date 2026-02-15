@@ -36,8 +36,8 @@ async def invoke(payload):
     # Initialize Bedrock model
     model = BedrockModel(
         model_id=model_id,
-        params={"max_tokens": 8000, "temperature": 0.7},
-        region="ap-northeast-1"
+        max_tokens=8000,
+        temperature=0.7
     )
     
     # Load system prompt

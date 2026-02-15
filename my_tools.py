@@ -1,5 +1,34 @@
 from strands import tool
 import subprocess
+import json
+try:
+    from ddgs import DDGS
+except ImportError:
+    DDGS = None
+
+@tool
+def search_web(query: str) -> str:
+    """Search the web for information using DuckDuckGo.
+    
+    Args:
+        query: Search query
+        
+    Returns:
+        Search results as string
+    """
+    if DDGS is None:
+        return "Search tool not available: duckduckgo_search package missing."
+        
+    try:
+        results = []
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=5):
+                results.append(f"Title: {r['title']}\nSnippet: {r['body']}\nURL: {r['href']}")
+        
+        return "\n\n".join(results) if results else "No results found."
+    except Exception as e:
+        return f"Search Error: {e}"
+
 
 @tool
 def execute_shell_command(command: str) -> str:
