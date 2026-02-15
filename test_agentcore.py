@@ -35,20 +35,29 @@ try:
         }).encode('utf-8')
     )
     
-    print("✅ Successfully invoked AgentCore Runtime!")
+    print("Successfully invoked AgentCore Runtime!")
     print(f"Response Status: {response['ResponseMetadata']['HTTPStatusCode']}\n")
     
     # Process the response stream
     print("Agent Response Stream:")
     print("=" * 80)
     
-    if 'body' in response:
+    if 'response' in response:
         # Read the streaming response
-        for event in response['body']:
-            print(event)
+        body_stream = response['response']
+        
+        try:
+            # Read the full content
+            content = body_stream.read()
+            if isinstance(content, bytes):
+                print(content.decode('utf-8'))
+            else:
+                print(content)
+        except Exception as stream_error:
+            print(f"Stream read error: {stream_error}")
     
 except Exception as e:
-    print(f"❌ Error invoking AgentCore Runtime: {str(e)}")
+    print(f"Error invoking AgentCore Runtime: {str(e)}")
     print(f"Error type: {type(e).__name__}")
     
     # Try to get more details
