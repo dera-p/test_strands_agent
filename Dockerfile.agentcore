@@ -1,16 +1,15 @@
-FROM public.ecr.aws/lambda/python:3.11-arm64
+FROM public.ecr.aws/lambda/python:3.13-arm64
 
-# 1. Update & Install Basic Tools
-RUN yum update -y && \
-    yum install -y \
+# 1. Update & Install Basic Tools (Updated: 2026-02-16 for Claude Sonnet 4.5)
+RUN dnf update -y && \
+    dnf install -y \
     gzip \
     tar \
     xz \
     wget \
     unzip \
-    yum-utils \
     shadow-utils \
-    && yum clean all
+    && dnf clean all
 
 # 2. Install Node.js 16 (ARM64 Binary)
 RUN cd /tmp && \
@@ -20,7 +19,7 @@ RUN cd /tmp && \
     rm -rf /tmp/node-v*
 
 # 3. Install Dependencies for Playwright & LibreOffice
-RUN yum install -y \
+RUN dnf install -y \
     java-17-amazon-corretto-headless \
     alsa-lib \
     at-spi2-atk \
@@ -46,15 +45,10 @@ RUN yum install -y \
     gtk3 \
     libGL \
     libXinerama \
-    && yum clean all
+    && dnf clean all
 
-# 4. Install LibreOffice
-RUN cd /tmp && \
-    wget https://download.documentfoundation.org/libreoffice/stable/25.2.7/rpm/x86_64/LibreOffice_25.2.7_Linux_x86-64_rpm.tar.gz && \
-    tar -xvf LibreOffice_25.2.7_Linux_x86-64_rpm.tar.gz && \
-    cd LibreOffice*_rpm/RPMS && \
-    yum localinstall -y --nogpgcheck *.rpm && \
-    rm -rf /tmp/LibreOffice*
+# 4. LibreOffice is skipped for ARM64 (not required for basic PPTX generation)
+# If needed, consider using Python-based pptx library instead
 
 # 5. Set Environment Variables
 ENV PYTHONUTF8=1
@@ -82,17 +76,15 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 
 # 9. Install Node.js Dependencies
 COPY package.json /app/
-RUN npm init -y && \
-    npm install pptxgenjs playwright@1.38.0 react-icons sharp
+COPY skills/pptx/scripts/package.json /app/skills/pptx/scripts/
+RUN cd /app && npm install pptxgenjs playwright@1.38.0 react-icons sharp && \
+    cd /app/skills/pptx/scripts && npm install
 
-# 10. Install Playwright Browsers (Chromium)
-RUN npx playwright install chromium
+# 10. Install Playwright Browsers (Chromium) - Temporary disabled due to network issues
+# RUN npx playwright install chromium
 
-# 11. Environment variables for AgentCore
-ENV AWS_REGION=ap-northeast-1
-ENV AWS_DEFAULT_REGION=ap-northeast-1
+# 11. Environment variables for AgentCore (runtime values set by CDK)
 ENV DOCKER_CONTAINER=1
-ENV S3_BUCKET_NAME=strands-pptx-output-ACCOUNT_ID
 
 # 12. Expose ports for AgentCore (HTTP invocations)
 EXPOSE 8080

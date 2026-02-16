@@ -1,3 +1,6 @@
 strands-agents
 bedrock-agentcore
 ddgs
+python-pptx
+markitdown
+lxml

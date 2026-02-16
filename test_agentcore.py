@@ -15,7 +15,7 @@ runtime_arn = "arn:aws:bedrock-agentcore:ap-northeast-1:290473375544:runtime/Str
 session_id = str(uuid.uuid4())
 
 # Test prompt
-test_prompt = "東京タワーについてのPowerPointプレゼンテーションを作成してください。3ページで、歴史、構造、観光情報を含めてください。"
+test_prompt = "富士山についてのPowerPointプレゼンテーションを作成してください。3スライドで、基本情報、歴史と文化、登山情報を含めてください。"
 
 print(f"Testing AgentCore Runtime: {runtime_arn}")
 print(f"Session ID: {session_id}")

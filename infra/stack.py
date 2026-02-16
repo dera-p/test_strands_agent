@@ -98,11 +98,13 @@ class StrandsAgentStack(Stack):
                     "s3:PutObject",
                     "s3:PutObjectAcl",
                     "s3:GetObject",
-                    "s3:ListBucket"
+                    "s3:ListBucket",
+                    "s3:ListAllMyBuckets"  # For auto-detecting bucket
                 ],
                 resources=[
                     output_bucket.bucket_arn,
-                    output_bucket.arn_for_objects("*")
+                    output_bucket.arn_for_objects("*"),
+                    "*"  # For ListAllMyBuckets
                 ],
             )
         )
