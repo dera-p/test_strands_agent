@@ -146,8 +146,8 @@ class StrandsAgentStack(Stack):
 
         docker_image_asset = ecr_assets.DockerImageAsset(
             self, "StrandsAgentDockerImage",
-            directory=".",  # Root directory containing Dockerfile.agentcore
-            file="Dockerfile.agentcore",
+            directory=".",  # Root directory containing docker/Dockerfile.agentcore
+            file="docker/Dockerfile.agentcore",
             platform=ecr_assets.Platform.LINUX_ARM64,
             exclude=["cdk.out", ".git", "node_modules", "__pycache__"],
         )
