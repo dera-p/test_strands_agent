@@ -51,12 +51,12 @@ async function createSimplePresentation(outputPath, title, slideContents) {
       console.log(`Creating slide ${index + 2}: ${content.substring(0, 30)}...`);
       const slide = pptx.addSlide();
       slide.background = { color: 'FFFFFF' };
-      
+
       // Slide title
       const lines = content.split('\n');
       const slideTitle = lines[0] || `Slide ${index + 1}`;
       const slideBody = lines.slice(1).join('\n') || content;
-      
+
       slide.addText(slideTitle, {
         x: 0.5,
         y: 0.5,
@@ -66,7 +66,7 @@ async function createSimplePresentation(outputPath, title, slideContents) {
         bold: true,
         color: '1F4788'
       });
-      
+
       // Slide content
       slide.addText(slideBody, {
         x: 0.5,
@@ -82,25 +82,25 @@ async function createSimplePresentation(outputPath, title, slideContents) {
 
     // Save the presentation
     console.log(`Saving to ${outputPath}...`);
-    
+
     // Ensure output directory exists
     const outputDir = path.dirname(outputPath);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    
+
     await pptx.writeFile({ fileName: outputPath });
-    
+
     console.log(`✓ Successfully created PowerPoint: ${outputPath}`);
     console.log(`  - Title: ${title}`);
     console.log(`  - Total slides: ${slideContents.length + 1}`);
-    
+
     // Verify file exists and get size
     const stats = fs.statSync(outputPath);
     console.log(`  - File size: ${(stats.size / 1024).toFixed(2)} KB`);
-    
+
     return { success: true, path: outputPath, size: stats.size };
-    
+
   } catch (error) {
     console.error(`✗ Error creating PowerPoint: ${error.message}`);
     console.error(error.stack);
@@ -111,17 +111,17 @@ async function createSimplePresentation(outputPath, title, slideContents) {
 // Main execution
 if (require.main === module) {
   const args = process.argv.slice(2);
-  
+
   if (args.length < 2) {
     console.error('Usage: node create_simple_pptx.js [output_path] <title> <slide1_content> [slide2_content] ...');
     console.error('Example: node create_simple_pptx.js "My Presentation" "Slide 1 content" "Slide 2 content"');
     console.error('Or: node create_simple_pptx.js output.pptx "My Presentation" "Slide 1 content" "Slide 2 content"');
     process.exit(1);
   }
-  
+
   // Smart argument parsing: check if first arg is a file path (ends with .pptx) or a title
   let outputPath, title, slideContents;
-  
+
   if (args[0].endsWith('.pptx')) {
     // Traditional format: <output_path> <title> <slides...>
     outputPath = args[0];
@@ -133,12 +133,12 @@ if (require.main === module) {
     title = args[0];
     slideContents = args.slice(1);
   }
-  
+
   if (slideContents.length === 0) {
     console.error('Error: At least one slide content is required');
     process.exit(1);
   }
-  
+
   createSimplePresentation(outputPath, title, slideContents)
     .then(result => {
       if (result.success) {
