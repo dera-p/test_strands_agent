@@ -4,12 +4,16 @@ Test script for AgentCore Runtime with template functionality
 import boto3
 import json
 import uuid
+import os
 
 # Initialize the bedrock-agentcore client (runtime operations)
-client = boto3.client('bedrock-agentcore', region_name='ap-northeast-1')
+region = os.environ.get('AWS_REGION', 'ap-northeast-1')
+client = boto3.client('bedrock-agentcore', region_name=region)
 
-# Runtime identifier (from CloudFormation output)
-runtime_arn = "arn:aws:bedrock-agentcore:ap-northeast-1:290473375544:runtime/StrandsPPTXAgent-jPTzxO9vHt"
+# Runtime identifier (from CloudFormation output or environment variable)
+runtime_arn = os.environ.get('AGENT_RUNTIME_ARN')
+if not runtime_arn:
+    raise ValueError("AGENT_RUNTIME_ARN environment variable is required. Set it to your AgentCore Runtime ARN.")
 
 # Generate a session ID
 session_id = str(uuid.uuid4())
@@ -20,7 +24,7 @@ test_prompt = """templates/business_template.pptxを編集して新しいプレ�
 【重要指示】以下を順番に実行：
 
 1. テンプレートダウンロード:
-aws s3 cp s3://strands-pptx-output/templates/business_template.pptx /tmp/business_template.pptx
+aws s3 cp s3://[YOUR_BUCKET]/templates/business_template.pptx /tmp/business_template.pptx
 
 2. 完全なインベントリ抽出（JSON出力）:
 python /app/skills/pptx/scripts/inventory.py /tmp/business_template.pptx /tmp/inventory.json

@@ -35,3 +35,11 @@ Thumbs.db
 # Temporary
 *.tmp
 *.log
+
+# Environment variables and secrets
+.env
+.env.local
+*.pem
+*.key
+config.json
+secrets.json

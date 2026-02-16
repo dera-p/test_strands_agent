@@ -4,12 +4,16 @@ Test script for AgentCore Runtime invocation
 import boto3
 import json
 import uuid
+import os
 
 # Initialize the bedrock-agentcore client (runtime operations)
-client = boto3.client('bedrock-agentcore', region_name='ap-northeast-1')
+region = os.environ.get('AWS_REGION', 'ap-northeast-1')
+client = boto3.client('bedrock-agentcore', region_name=region)
 
-# Runtime identifier (from CloudFormation output)
-runtime_arn = "arn:aws:bedrock-agentcore:ap-northeast-1:290473375544:runtime/StrandsPPTXAgent-jPTzxO9vHt"
+# Runtime identifier (from CloudFormation output or environment variable)
+runtime_arn = os.environ.get('AGENT_RUNTIME_ARN')
+if not runtime_arn:
+    raise ValueError("AGENT_RUNTIME_ARN environment variable is required. Set it to your AgentCore Runtime ARN.")
 
 # Generate a session ID
 session_id = str(uuid.uuid4())
